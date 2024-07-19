@@ -7,12 +7,11 @@ FROM node:18-alpine AS builder
 WORKDIR /synclinear
 
 COPY package.json .
+COPY package-lock.json .
 RUN corepack enable && corepack prepare
 
-COPY pnpm-lock.yaml .
-RUN pnpm fetch
+RUN npm ci
 COPY . .
-RUN pnpm install --recursive --offline --frozen-lockfile
 
 # https://github.com/vercel/next.js/discussions/17641
 ARG NEXT_PUBLIC_GITHUB_OAUTH_ID
@@ -20,7 +19,7 @@ ARG NEXT_PUBLIC_LINEAR_OAUTH_ID
 ENV NEXT_PUBLIC_GITHUB_OAUTH_ID=$NEXT_PUBLIC_GITHUB_OAUTH_ID
 ENV NEXT_PUBLIC_LINEAR_OAUTH_ID=$NEXT_PUBLIC_LINEAR_OAUTH_ID
 
-RUN pnpm run build
+RUN npm run build
 
 ####################################################################################################
 ## Create Production Image
