@@ -1,0 +1,114 @@
+datasource db {
+    provider = "postgres"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider      = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl"]
+}
+
+model SyncedIssue {
+    id String @id @default(cuid())
+
+    githubIssueNumber BigInt
+    linearIssueNumber Int
+
+    githubIssueId BigInt
+    linearIssueId String
+
+    linearTeamId String
+    LinearTeam   LinearTeam @relation(fields: [linearTeamId], references: [teamId])
+
+    githubRepoId BigInt
+    GitHubRepo   GitHubRepo @relation(fields: [githubRepoId], references: [repoId])
+
+    @@map("synced_issues")
+}
+
+model LinearTeam {
+    id String @id @default(cuid())
+
+    teamId   String @unique
+    teamName String
+
+    publicLabelId String
+
+    canceledStateId String
+    doneStateId     String
+    toDoStateId     String
+
+    Sync Sync[]
+
+    SyncedIssue SyncedIssue[]
+    Milestone   Milestone[]
+
+    @@map("linear_teams")
+}
+
+model GitHubRepo {
+    id String @id @default(cuid())
+
+    repoId   BigInt @unique
+    repoName String
+
+    webhookSecret String
+
+    Sync Sync[]
+
+    SyncedIssue SyncedIssue[]
+    Milestone   Milestone[]
+
+    @@map("github_repos")
+}
+
+model Sync {
+    id String @id @default(cuid())
+
+    githubUserId BigInt
+    linearUserId String
+
+    GitHubRepo     GitHubRepo @relation(fields: [githubRepoId], references: [repoId])
+    githubRepoId   BigInt
+    githubApiKey   String
+    githubApiKeyIV String
+
+    LinearTeam     LinearTeam @relation(fields: [linearTeamId], references: [teamId])
+    linearTeamId   String
+    linearApiKey   String
+    linearApiKeyIV String
+
+    @@unique([githubUserId, linearUserId, githubRepoId, linearTeamId])
+    @@map("syncs")
+}
+
+model User {
+    id String @id @default(cuid())
+
+    githubUserId   BigInt
+    githubUsername String
+    githubEmail    String?
+
+    linearUserId   String
+    linearUsername String
+    linearEmail    String?
+
+    @@unique([githubUserId, linearUserId])
+    @@map("users")
+}
+
+model Milestone {
+    id String @id @default(cuid())
+
+    milestoneId Int
+    cycleId     String
+
+    GitHubRepo   GitHubRepo @relation(fields: [githubRepoId], references: [repoId])
+    githubRepoId BigInt
+
+    LinearTeam   LinearTeam @relation(fields: [linearTeamId], references: [teamId])
+    linearTeamId String
+
+    @@unique([milestoneId, githubRepoId, cycleId, linearTeamId])
+    @@map("milestones")
+}
