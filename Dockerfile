@@ -12,7 +12,7 @@ RUN corepack enable && corepack prepare
 COPY pnpm-lock.yaml .
 RUN pnpm fetch
 COPY . .
-RUN pnpm install --recursive --offline --frozen-lockfile
+RUN pnpm install --recursive --frozen-lockfile
 
 # https://github.com/vercel/next.js/discussions/17641
 ARG NEXT_PUBLIC_GITHUB_OAUTH_ID
