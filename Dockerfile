@@ -7,12 +7,12 @@ FROM node:18-alpine AS builder
 WORKDIR /synclinear
 
 COPY package.json .
-COPY pnpm-lock.yaml .  # Ensure pnpm-lock.yaml is copied before running pnpm fetch
 RUN corepack enable && corepack prepare
 
+COPY pnpm-lock.yaml .
 RUN pnpm fetch
 COPY . .
-RUN pnpm install --recursive --frozen-lockfile  # Removed --offline flag
+RUN pnpm install --recursive --offline --frozen-lockfile
 
 # https://github.com/vercel/next.js/discussions/17641
 ARG NEXT_PUBLIC_GITHUB_OAUTH_ID
